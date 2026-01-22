@@ -103,21 +103,6 @@ pub fn remove_socket() -> io::Result<()> {
     }
 }
 
-/// Check if the socket exists.
-pub fn socket_exists() -> bool {
-    #[cfg(unix)]
-    {
-        socket_path().map(|p| p.exists()).unwrap_or(false)
-    }
-
-    #[cfg(windows)]
-    {
-        // On Windows, we can't easily check if a named pipe exists
-        // We'll rely on connection attempts instead
-        true
-    }
-}
-
 /// Create a listener for incoming IPC connections.
 pub async fn create_listener() -> io::Result<Listener> {
     // Ensure socket directory exists and clean up stale socket
@@ -147,25 +132,6 @@ pub async fn create_listener() -> io::Result<Listener> {
     }
 
     Ok(listener)
-}
-
-/// Connect to the daemon's IPC socket.
-pub async fn connect() -> io::Result<Stream> {
-    let name = socket_name();
-
-    #[cfg(unix)]
-    let stream = {
-        let name = name.to_fs_name::<GenericFilePath>()?;
-        Stream::connect(name).await?
-    };
-
-    #[cfg(windows)]
-    let stream = {
-        let name = name.to_ns_name::<GenericNamespaced>()?;
-        Stream::connect(name).await?
-    };
-
-    Ok(stream)
 }
 
 /// Send a length-prefixed message.

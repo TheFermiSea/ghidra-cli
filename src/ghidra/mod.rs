@@ -1,6 +1,5 @@
 pub mod bridge;
 pub mod headless;
-pub mod data;
 pub mod scripts;
 pub mod setup;
 
@@ -11,7 +10,6 @@ use crate::error::{GhidraError, Result};
 
 #[derive(Debug)]
 pub struct GhidraClient {
-    config: Config,
     install_dir: PathBuf,
     project_dir: PathBuf,
 }
@@ -27,14 +25,9 @@ impl GhidraClient {
         }
 
         Ok(Self {
-            config,
             install_dir,
             project_dir,
         })
-    }
-
-    pub fn install_dir(&self) -> &PathBuf {
-        &self.install_dir
     }
 
     pub fn get_headless_script(&self) -> PathBuf {
@@ -135,52 +128,6 @@ impl GhidraClient {
         }
 
         Ok(())
-    }
-
-    pub fn run_script(&self, project_name: &str, program_name: &str, script_path: &Path, args: &[String]) -> Result<String> {
-        let project_path = self.get_project_path(project_name);
-        let headless = self.get_headless_script();
-
-        let mut cmd = Command::new(&headless);
-        cmd.arg(project_path.to_str().unwrap())
-            .arg(project_name)
-            .arg("-process")
-            .arg(program_name)
-            .arg("-scriptPath")
-            .arg(script_path.parent().unwrap().to_str().unwrap())
-            .arg("-postScript")
-            .arg(script_path.file_name().unwrap().to_str().unwrap());
-
-        for arg in args {
-            cmd.arg(arg);
-        }
-
-        let output = cmd.output()?;
-
-        if !output.status.success() {
-            return Err(GhidraError::ExecutionFailed(
-                String::from_utf8_lossy(&output.stderr).to_string()
-            ));
-        }
-
-        Ok(String::from_utf8_lossy(&output.stdout).to_string())
-    }
-
-    fn get_scripts_dir(&self) -> Result<PathBuf> {
-        let config_dir = dirs::config_dir()
-            .ok_or_else(|| GhidraError::ConfigError("Could not determine config directory".to_string()))?;
-
-        let scripts_dir = config_dir.join("ghidra-cli").join("scripts");
-
-        if !scripts_dir.exists() {
-            std::fs::create_dir_all(&scripts_dir)?;
-        }
-
-        Ok(scripts_dir)
-    }
-
-    pub fn get_install_dir(&self) -> &Path {
-        &self.install_dir
     }
 
     pub fn get_project_dir(&self) -> &Path {

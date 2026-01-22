@@ -8,7 +8,7 @@ use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use tokio::sync::{Mutex, Semaphore, oneshot};
-use tracing::{info, warn, error};
+use tracing::{info, warn};
 
 use crate::cli::Commands;
 use crate::daemon::cache::Cache;
@@ -111,32 +111,6 @@ impl CommandQueue {
         });
     }
 
-    /// Get the current queue depth.
-    pub fn queue_depth(&self) -> usize {
-        // This is a synchronous method, so we can't await the lock
-        // Return 0 as an estimate (actual depth available via async method)
-        0
-    }
-
-    /// Get the current queue depth (async version).
-    pub async fn queue_depth_async(&self) -> usize {
-        let queue = self.queue.lock().await;
-        queue.len()
-    }
-
-    /// Get the number of completed commands.
-    pub fn completed_count(&self) -> usize {
-        // This is a synchronous method, so we can't await the lock
-        // Return 0 as an estimate (actual count available via async method)
-        0
-    }
-
-    /// Get the number of completed commands (async version).
-    pub async fn completed_count_async(&self) -> usize {
-        let count = self.completed_count.lock().await;
-        *count
-    }
-
     /// Get the project path.
     pub fn project_path(&self) -> &Path {
         &self.project_path
@@ -160,6 +134,5 @@ mod tests {
     async fn test_queue_creation() {
         let queue = CommandQueue::new(PathBuf::from("/test/project"));
         assert_eq!(queue.project_path(), Path::new("/test/project"));
-        assert_eq!(queue.queue_depth_async().await, 0);
     }
 }

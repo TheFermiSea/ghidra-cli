@@ -21,7 +21,6 @@ pub mod ipc_server;
 pub mod process;
 pub mod queue;
 pub mod rpc;
-pub mod state;
 
 /// Daemon configuration.
 pub struct DaemonConfig {

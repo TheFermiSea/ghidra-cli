@@ -43,14 +43,6 @@ impl OutputFormat {
             _ => Err(GhidraError::InvalidFormat(format!("Unknown format: {}", s))),
         }
     }
-
-    pub fn is_human_friendly(&self) -> bool {
-        matches!(self, Self::Full | Self::Compact | Self::Table | Self::Tree)
-    }
-
-    pub fn is_machine_friendly(&self) -> bool {
-        matches!(self, Self::Json | Self::JsonCompact | Self::JsonStream | Self::Csv | Self::Tsv)
-    }
 }
 
 pub trait Formatter {

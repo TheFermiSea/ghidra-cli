@@ -14,12 +14,6 @@ pub struct Request {
     pub command: Command,
 }
 
-impl Request {
-    /// Create a new request with the given ID and command.
-    pub fn new(id: u64, command: Command) -> Self {
-        Self { id, command }
-    }
-}
 
 /// IPC response from daemon to CLI.
 #[derive(Debug, Serialize, Deserialize)]
@@ -130,7 +124,7 @@ mod tests {
 
     #[test]
     fn test_request_serialization() {
-        let request = Request::new(1, Command::Ping);
+        let request = Request { id: 1, command: Command::Ping };
         let json = serde_json::to_string(&request).unwrap();
         let deserialized: Request = serde_json::from_str(&json).unwrap();
         assert_eq!(deserialized.id, 1);

@@ -4,7 +4,6 @@
 //! the new IPC layer instead of TCP.
 
 use std::sync::Arc;
-use std::time::Instant;
 
 use interprocess::local_socket::traits::tokio::Listener as ListenerTrait;
 use tokio::io::BufReader;
@@ -13,7 +12,7 @@ use tracing::{debug, error, info};
 
 use crate::ghidra::bridge::GhidraBridge;
 use crate::ipc::protocol::{Command, Request, Response};
-use crate::ipc::transport::{self, platform::Listener};
+use crate::ipc::transport;
 
 use super::handler;
 
@@ -21,23 +20,12 @@ use super::handler;
 pub struct IpcServer {
     /// The Ghidra bridge instance
     bridge: Arc<Mutex<Option<GhidraBridge>>>,
-    /// Shutdown signal sender
-    shutdown_tx: broadcast::Sender<()>,
-    /// Server start time
-    started_at: Instant,
 }
 
 impl IpcServer {
     /// Create a new IPC server.
-    pub fn new(
-        bridge: Arc<Mutex<Option<GhidraBridge>>>,
-        shutdown_tx: broadcast::Sender<()>,
-    ) -> Self {
-        Self {
-            bridge,
-            shutdown_tx,
-            started_at: Instant::now(),
-        }
+    pub fn new(bridge: Arc<Mutex<Option<GhidraBridge>>>) -> Self {
+        Self { bridge }
     }
 
     /// Handle a single client connection.
@@ -117,7 +105,7 @@ pub async fn run_ipc_server(
     
     info!("IPC server listening on {}", transport::socket_name());
 
-    let server = Arc::new(IpcServer::new(bridge, shutdown_tx.clone()));
+    let server = Arc::new(IpcServer::new(bridge));
     let mut shutdown_rx = shutdown_tx.subscribe();
 
     loop {

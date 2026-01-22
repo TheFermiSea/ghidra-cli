@@ -279,44 +279,6 @@ print("---GHIDRA_CLI_END---")
 "#
 }
 
-pub fn get_xrefs_to_script() -> &'static str {
-    r#"
-# Get cross-references to an address
-# @category Analysis
-
-import json
-
-if len(args) < 1:
-    print(json.dumps({"error": "No address provided"}))
-    exit(1)
-
-addr_str = args[0]
-addr = currentProgram.getAddressFactory().getAddress(addr_str)
-
-xrefs = []
-refs = currentProgram.getReferenceManager().getReferencesTo(addr)
-function_manager = currentProgram.getFunctionManager()
-
-for ref in refs:
-    from_addr = ref.getFromAddress()
-    from_func = function_manager.getFunctionContaining(from_addr)
-    to_func = function_manager.getFunctionContaining(addr)
-
-    xref_data = {
-        "from": from_addr.toString(),
-        "to": addr.toString(),
-        "ref_type": ref.getReferenceType().toString(),
-        "from_function": from_func.getName() if from_func else None,
-        "to_function": to_func.getName() if to_func else None
-    }
-    xrefs.append(xref_data)
-
-print("---GHIDRA_CLI_START---")
-print(json.dumps(xrefs, indent=2))
-print("---GHIDRA_CLI_END---")
-"#
-}
-
 /// Save a script to disk
 pub fn save_script(name: &str, content: &str, scripts_dir: &std::path::Path) -> crate::error::Result<std::path::PathBuf> {
     // All scripts are Python now with PyGhidra support

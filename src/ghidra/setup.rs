@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{Read, Write, Seek};
+use std::io::Write;
 use std::path::{Path, PathBuf};
 use anyhow::{Context, Result, anyhow};
 use futures_util::StreamExt;
@@ -11,7 +11,6 @@ use serde::Deserialize;
 struct GithubAsset {
     name: String,
     browser_download_url: String,
-    size: u64,
 }
 
 /// GitHub release information

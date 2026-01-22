@@ -19,7 +19,7 @@ use format::OutputFormat;
 use ghidra::GhidraClient;
 use query::{Query, DataType, FieldSelector, SortKey};
 use std::path::PathBuf;
-use tracing::{info, error};
+use tracing::info;
 
 #[cfg(unix)]
 use daemonize::Daemonize;
@@ -321,7 +321,7 @@ async fn handle_daemon_clear_cache(project: Option<String>) -> anyhow::Result<()
         anyhow::bail!("No project specified and no default project configured");
     };
 
-    if let Some(daemon_info) = get_running_daemon_info(&data_dir, &project_path)? {
+    if let Some(_daemon_info) = get_running_daemon_info(&data_dir, &project_path)? {
         // TODO: Implement cache clear via RPC
         println!("Cache clear not yet implemented via RPC");
         // For now, just notify
@@ -539,7 +539,7 @@ fn handle_function_command(cmd: cli::FunctionCommands) -> anyhow::Result<()> {
 
     match cmd {
         FunctionCommands::List(opts) => {
-            let mut args = QueryArgs {
+            let args = QueryArgs {
                 data_type: "functions".to_string(),
                 program: opts.program,
                 project: opts.project,
@@ -556,7 +556,7 @@ fn handle_function_command(cmd: cli::FunctionCommands) -> anyhow::Result<()> {
         }
         FunctionCommands::Decompile(args) => {
             // Decompile specific function
-            let mut query_args = QueryArgs {
+            let query_args = QueryArgs {
                 data_type: "functions".to_string(),
                 program: args.options.program,
                 project: args.options.project,

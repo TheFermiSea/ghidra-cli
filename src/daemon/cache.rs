@@ -79,6 +79,7 @@ impl Cache {
     }
 
     /// Clear all cached entries.
+    #[allow(dead_code)] // Used in tests and will be used when cache-clear RPC is implemented
     pub async fn clear(&self) {
         let mut entries = self.entries.write().await;
         entries.clear();
@@ -86,6 +87,7 @@ impl Cache {
     }
 
     /// Remove expired entries.
+    #[allow(dead_code)] // Used in tests and will be used for periodic cleanup
     pub async fn cleanup(&self) {
         let mut entries = self.entries.write().await;
         let ttl = self.ttl;

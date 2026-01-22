@@ -178,14 +178,4 @@ impl<'a> HeadlessExecutor<'a> {
             &[],
         )
     }
-
-    pub fn get_xrefs_to(&self, project_name: &str, program_name: &str, address: &str) -> Result<JsonValue> {
-        self.execute_script(
-            project_name,
-            program_name,
-            scripts::get_xrefs_to_script(),
-            "xrefs_to",
-            &[address.to_string()],
-        )
-    }
 }
