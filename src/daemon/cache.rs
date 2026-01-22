@@ -87,7 +87,7 @@ impl Cache {
     }
 
     /// Remove expired entries.
-    #[allow(dead_code)] // Used in tests and will be used for periodic cleanup
+    #[allow(dead_code)] // Will be used for periodic cleanup
     pub async fn cleanup(&self) {
         let mut entries = self.entries.write().await;
         let ttl = self.ttl;
@@ -151,5 +151,27 @@ mod tests {
 
         // Should be expired
         assert!(cache.get(&command).await.is_none());
+    }
+
+    #[tokio::test]
+    async fn test_cache_cleanup() {
+        let cache = Cache::with_ttl(Duration::from_millis(50));
+
+        let cmd1 = Commands::Version;
+        let cmd2 = Commands::Config(crate::cli::ConfigCommands::List);
+
+        // Add two entries
+        cache.set(&cmd1, "value1".to_string()).await;
+        cache.set(&cmd2, "value2".to_string()).await;
+
+        // Wait for expiration
+        tokio::time::sleep(Duration::from_millis(100)).await;
+
+        // Run cleanup to remove expired entries
+        cache.cleanup().await;
+
+        // Both should be gone
+        assert!(cache.get(&cmd1).await.is_none());
+        assert!(cache.get(&cmd2).await.is_none());
     }
 }
