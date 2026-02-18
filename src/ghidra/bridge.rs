@@ -207,7 +207,11 @@ pub fn start_bridge(
     // Add mode-specific args
     match &mode {
         BridgeStartMode::Import { binary_path } => {
-            cmd.arg("-import").arg(binary_path);
+            // Canonicalize binary path to absolute so it resolves correctly
+            // after we set the process working directory to the app data dir
+            let abs_binary = std::fs::canonicalize(binary_path)
+                .unwrap_or_else(|_| PathBuf::from(binary_path));
+            cmd.arg("-import").arg(abs_binary);
         }
         BridgeStartMode::Process { program_name } => {
             cmd.arg("-process").arg(program_name).arg("-noanalysis");
@@ -223,6 +227,11 @@ pub fn start_bridge(
         .arg("-postScript")
         .arg("GhidraCliBridge.java")
         .arg(port_file.to_str().unwrap());
+
+    // Set working directory to app data dir so Ghidra's temp/compiled files
+    // (e.g. compiled Java script classes) don't pollute the user's CWD
+    let data_dir = get_data_dir()?;
+    cmd.current_dir(&data_dir);
 
     cmd.stdin(Stdio::null())
         .stdout(Stdio::piped())
