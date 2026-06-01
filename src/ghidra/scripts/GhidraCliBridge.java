@@ -2537,16 +2537,27 @@ public class GhidraCliBridge extends GhidraScript {
             Function func = findFunctionByNameOrAddress(target);
             if (func == null) return errorResult(buildFunctionTargetHint(target));
 
-            // Parse the signature using Ghidra's C parser
-            ghidra.app.util.cparser.C.CParserUtils.CParseResults parseResults =
-                ghidra.app.util.cparser.C.CParserUtils.parseSignature(
-                    this, currentProgram, sigStr);
-
-            if (parseResults == null || parseResults.getDataType() == null) {
-                return errorResult("Failed to parse signature: " + sigStr);
+            // Parse the signature using Ghidra's headless-safe FunctionSignatureParser.
+            // Ghidra 12.1 removed CParserUtils.parseSignature(GhidraScript, ...) and
+            // CParseResults.getDataType(). The remaining CParserUtils.parseSignature
+            // overloads require a ServiceProvider/DataTypeManagerService and NPE in
+            // headless (state.getTool() == null). FunctionSignatureParser works against
+            // the program's own DataTypeManager with a null DataTypeQueryService and
+            // returns a FunctionDefinitionDataType (null on parse failure).
+            ghidra.program.model.data.FunctionDefinitionDataType funcDef;
+            try {
+                ghidra.app.util.parser.FunctionSignatureParser sigParser =
+                    new ghidra.app.util.parser.FunctionSignatureParser(
+                        currentProgram.getDataTypeManager(), null);
+                funcDef = sigParser.parse(func.getSignature(), sigStr);
+            } catch (Exception parseEx) {
+                return errorResult("Failed to parse signature: " + sigStr
+                    + " (" + parseEx.getMessage() + ")");
             }
 
-            FunctionDefinition funcDef = (FunctionDefinition) parseResults.getDataType();
+            if (funcDef == null) {
+                return errorResult("Failed to parse signature: " + sigStr);
+            }
 
             int txId = currentProgram.startTransaction("Set function signature");
             try {
