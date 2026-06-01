@@ -1,0 +1,14 @@
+{
+  "name": "marco-ghidra",
+  "owner": {
+    "name": "Marco de Abreu",
+    "url": "https://github.com/marcoabreu"
+  },
+  "plugins": [
+    {
+      "name": "ghidra-cli",
+      "source": "./.claude",
+      "description": "Ghidra + ILSpy CLI skills and the ghidra reverse-engineering agent (fork of akiselev/ghidra-cli)"
+    }
+  ]
+}

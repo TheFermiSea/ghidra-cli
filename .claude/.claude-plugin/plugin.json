@@ -1,0 +1,8 @@
+{
+  "name": "ghidra-cli",
+  "description": "Ghidra + ILSpy CLI skills and the ghidra reverse-engineering agent",
+  "author": {
+    "name": "akiselev (upstream)",
+    "url": "https://github.com/akiselev/ghidra-cli"
+  }
+}
